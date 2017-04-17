@@ -1,0 +1,144 @@
+
+JavaScript code HTML body & CSS
+
+1
+var viewer = new Cesium.Viewer('cesiumContainer'); //Creating the globe with cesium
+2
+​
+3
+var pinBuilder = new Cesium.PinBuilder(); //Creating pin heads to mark the two locations
+4
+​
+5
+var pin1 = viewer.entities.add //Creating location 1 using billboards
+6
+({
+7
+    position: Cesium.Cartesian3.fromDegrees(80.237617,13.067439, 100000.0), //Coordinates of Chennai,India
+8
+    billboard: 
+9
+    {
+10
+        image: new Cesium.ConstantProperty(pinBuilder.fromText("BIRTH PLACE",Cesium.Color.PURPLE, 80)),
+11
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM
+12
+    }
+13
+});
+14
+​
+15
+var pin2 = viewer.entities.add //Creating location 2 using billboards
+16
+({
+17
+    position: Cesium.Cartesian3.fromDegrees(-71.057083,42.361145, 100000.0), //Cooridinates of Boston,USA
+18
+    billboard: 
+19
+    {
+20
+        image: new Cesium.ConstantProperty(pinBuilder.fromText("CURRENT TOWN",Cesium.Color.YELLOW, 80)),
+21
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM
+22
+    }
+23
+});
+24
+​
+25
+function getLinePositions() //To connect thw two locations 
+26
+{
+27
+    return [pin1.position.getValue(0), pin2.position.getValue(0)];
+28
+}
+29
+​
+30
+var glowingLine = viewer.entities.add //Connecting the two locations using entity api
+31
+       ({
+32
+    polyline : { //Used glowLine in this project
+33
+        positions : new Cesium.CallbackProperty(getLinePositions, false),
+34
+        width : 10,
+35
+        material : new Cesium.PolylineGlowMaterialProperty({
+36
+            glowPower : 0.3,
+37
+            color : Cesium.Color.ORANGE
+38
+        })
+39
+    }
+40
+});
+41
+​
+42
+​
+43
+​
+44
+var dragging = null;
+45
+var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+46
+​
+47
+handler.setInputAction(function(click) //Setting even handelers for input actions
+48
+    {  
+49
+    var pickedObject = viewer.scene.pick(click.position);
+50
+    if (pickedObject !== undefined && Cesium.defined(pickedObject)) {
+51
+        dragging = pickedObject;
+52
+        viewer.scene.screenSpaceCameraController.enableRotate = false;
+53
+    }
+54
+}, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+55
+​
+56
+handler.setInputAction(function() {
+57
+    if (dragging) {
+58
+        dragging = false;
+59
+        viewer.scene.screenSpaceCameraController.enableRotate = true;
+60
+    }
+61
+}, Cesium.ScreenSpaceEventType.LEFT_UP);
+62
+​
+63
+handler.setInputAction(function(movement) {
+64
+    var ray = viewer.camera.getPickRay(movement.endPosition);
+65
+    var position = viewer.scene.globe.pick(ray, viewer.scene);
+66
+    if (!Cesium.defined(position) || !dragging) 
+67▲
+        return;
+68
+    
+69
+    var positionCartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(position);//WGS84 stand. is used for global positioning
+Cesium 1.32
+
+Gallery Console
